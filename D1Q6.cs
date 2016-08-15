@@ -114,10 +114,10 @@ namespace Latticeb.Models
                  F[t + 1, N - 5, 0] = F[t, N - 1, 0];
                  F[t + 1, N - 6, 0] = F[t, N - 1, 0];
 
-                 F[t + 1, N - 1, 0] = F[t, N - 1, 1];
-                 F[t + 1, N - 2, 0] = F[t, N - 1, 1];
+                 F[t + 1, N - 1, 1] = F[t, N - 1, 1];
+                 F[t + 1, N - 2, 1] = F[t, N - 1, 1];
 
-                 F[t + 1, N - 1, 0] = F[t, N - 1, 2];
+                 F[t + 1, N - 1, 2] = F[t, N - 1, 2];
 
 
                  for (int j = 0; j < 6; ++j) //--cells on the left side
