@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -95,6 +95,31 @@ namespace Latticeb.Models
              {
                  float rho, u; //--density and velocity in current cell
 
+                 F[t + 1, 0, 5] = F[t, 0, 5];
+                 F[t + 1, 1, 5] = F[t, 0, 5];
+                 F[t + 1, 2, 5] = F[t, 0, 5];
+                 F[t + 1, 3, 5] = F[t, 0, 5];
+                 F[t + 1, 4, 5] = F[t, 0, 5];
+                 F[t + 1, 5, 5] = F[t, 0, 5];
+
+                 F[t + 1, 0, 4] = F[t, 0, 4];
+                 F[t + 1, 1, 4] = F[t, 0, 4];
+               
+                 F[t + 1, 0, 3] = F[t, 0, 3];
+
+                 F[t + 1, N - 1, 0] = F[t, N - 1, 0];   
+                 F[t + 1, N - 2, 0] = F[t, N - 1, 0];
+                 F[t + 1, N - 3, 0] = F[t, N - 1, 0];
+                 F[t + 1, N - 4, 0] = F[t, N - 1, 0];
+                 F[t + 1, N - 5, 0] = F[t, N - 1, 0];
+                 F[t + 1, N - 6, 0] = F[t, N - 1, 0];
+
+                 F[t + 1, N - 1, 0] = F[t, N - 1, 1];
+                 F[t + 1, N - 2, 0] = F[t, N - 1, 1];
+
+                 F[t + 1, N - 1, 0] = F[t, N - 1, 2];
+
+
                  for (int j = 0; j < 6; ++j) //--cells on the left side
                  {
                      //--velocities 0 - 5 for j in [3, n - 2)
@@ -105,7 +130,7 @@ namespace Latticeb.Models
                      F[t + 1, j + 1, 3] = invtau * (_n_eq_3(rho, u) - F[t, j, 3]) + F[t, j, 3];
                      if (j >= 1) F[t + 1, j - 1, 2] = invtau * (_n_eq_2(rho, u) - F[t, j, 2]) + F[t, j, 2];
                      if (j >= 2) F[t + 1, j - 2, 1] = invtau * (_n_eq_1(rho, u) - F[t, j, 1]) + F[t, j, 1];
-                     if (j >= 6) F[t + 1, j - 6, 0] = invtau * (_n_eq_0(rho, u) - F[t, j, 0]) + F[t, j, 0];
+                     // if (j >= 6) F[t + 1, j - 6, 0] = invtau * (_n_eq_0(rho, u) - F[t, j, 0]) + F[t, j, 0];
                  }
 
                  for (int j = 6; j < N - 6; ++j) //--all internal cells
@@ -131,7 +156,7 @@ namespace Latticeb.Models
                      F[t + 1, j - 1, 2] = invtau * (_n_eq_2(rho, u) - F[t, j, 2]) + F[t, j, 2];
                      if (j + 1 < N) F[t + 1, j + 1, 3] = invtau * (_n_eq_3(rho, u) - F[t, j, 3]) + F[t, j, 3];
                      if (j + 2 < N) F[t + 1, j + 2, 4] = invtau * (_n_eq_4(rho, u) - F[t, j, 4]) + F[t, j, 4];
-                     if (j + 6 < N) F[t + 1, j + 6, 5] = invtau * (_n_eq_5(rho, u) - F[t, j, 5]) + F[t, j, 5];
+                     // if (j + 6 < N) F[t + 1, j + 6, 5] = invtau * (_n_eq_5(rho, u) - F[t, j, 5]) + F[t, j, 5];
                  }
              }
              //--there is no boundary conditions
