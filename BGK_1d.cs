@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +42,7 @@ namespace BGK.Models
              nvel = Finit.GetLength(1);
 
              dx = physlength / (nspace - 1.0f); // space step
-             dt =  0.99f * dx / (vw * (nvel - 1.0f) * 0.5f) ; // time step (CFL condition)
+             dt =  0.05f * dx / (vw * (nvel - 1.0f) * 0.5f) ; // time step (CFL condition)
 
 
              Fnew = new float[nspace, nvel];  // time layer for one step solution
