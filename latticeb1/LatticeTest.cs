@@ -15,12 +15,14 @@ namespace Latticeb
         {
             const int tsteps = 10000;  // time steps
 
+            // internal condition
+            float u0 = 0.48f;
 
             // initial boundary conditions, Temperature = 1.
-            float u1 = 0.5f;
+            float u1 = 0.35f;
             float rho1 = 1.0f;
 
-            float u2 = 0.5f;
+            float u2 = -0.28f;
             float rho2 = 1.0f;
 
             const int nlattice = 161; // space nodes quantity for lattice
@@ -31,12 +33,12 @@ namespace Latticeb
 
             for (int i = 1; i < nlattice - 1; ++i)
             {
-                flattice[i, 0] = D1Q6._n_eq_k(1.0f, u1, 0);
-                flattice[i, 1] = D1Q6._n_eq_k(1.0f, u1, 1);
-                flattice[i, 2] = D1Q6._n_eq_k(1.0f, u1, 2);
-                flattice[i, 3] = D1Q6._n_eq_k(1.0f, u1, 3);
-                flattice[i, 4] = D1Q6._n_eq_k(1.0f, u1, 4);
-                flattice[i, 5] = D1Q6._n_eq_k(1.0f, u1, 5);
+                flattice[i, 0] = D1Q6._n_eq_k(1.0f, u0, 0);
+                flattice[i, 1] = D1Q6._n_eq_k(1.0f, u0, 1);
+                flattice[i, 2] = D1Q6._n_eq_k(1.0f, u0, 2);
+                flattice[i, 3] = D1Q6._n_eq_k(1.0f, u0, 3);
+                flattice[i, 4] = D1Q6._n_eq_k(1.0f, u0, 4);
+                flattice[i, 5] = D1Q6._n_eq_k(1.0f, u0, 5);
             }
 
             for (int time = 0; time < tsteps; ++time)
