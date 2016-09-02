@@ -53,29 +53,6 @@ namespace Latticeb
 
             float m0 = 0, m1 = 0, m2 = 0;
 
-            const float w0 = 0.3234f;
-            const float w1 = 0.1463f;
-            const float w2 = 0.0303f;
-
-            /*
-            {{0.3234 * 1,0.1463 * 1,0.0303 * 1},
-             {0.3234 * 0.5,0.1463 * 1,0.0303 * 3},
-             {0.3234 * 0.25,0.1463 * 1,0.0303 * 9}}^-1 = 
-             {{7.42115, -9.89487, 2.47372},
-             {-10.2529, 23.9234, -6.83527},
-             {3.30033, -9.90099, 6.60066}}
-              wolframalpha.com */
-
-            const float a11 = 7.42115f;
-            const float a12 = -9.89487f;
-            const float a13 = 2.47372f;
-            const float a21 = -10.2529f;
-            const float a22 = 23.9234f;
-            const float a23 = -6.83527f;
-            const float a31 = 3.30033f;
-            const float a32 = -9.90099f;
-            const float a33 = 6.60066f;
-
             for (int i = 1; i < nlattice - 1; ++i)
             {
                 flattice[i, 0] = D1Q6._n_eq_k(1.0f, u1, 0);
@@ -106,9 +83,9 @@ namespace Latticeb
                 // m0 *= 1.0f; m1 *= vw; m2 *= vw;
 
                 //--TODO: set LBE condition (flattice[,] = F(flattice, fleft, fright) )
-                flattice[0, 3] = a11 * m0 + a12 * m1 + a13 * m2;
-                flattice[0, 4] = a21 * m0 + a22 * m1 + a23 * m2;
-                flattice[0, 5] = a31 * m0 + a32 * m1 + a33 * m2;
+                flattice[0, 3] = D1Q6.distr0(m0, m1, m2);
+                flattice[0, 4] = D1Q6.distr1(m0, m1, m2);
+                flattice[0, 5] = D1Q6.distr2(m0, m1, m2);
 
                 m0 = m1 = m2 = 0;
                 for (int i = 0; i < nvlc / 2; ++i)
@@ -121,9 +98,9 @@ namespace Latticeb
                 // m0 *= 1.0; m1 *= vw; m2 *= vw;
 
                 //--TODO: set LBE condition (flattice[,] = F(flattice, fleft, fright) )
-                flattice[nlattice - 1, 2] = a11 * m0 + a12 * m1 + a13 * m2;
-                flattice[nlattice - 1, 1] = a21 * m0 + a22 * m1 + a23 * m2;
-                flattice[nlattice - 1, 0] = a31 * m0 + a32 * m1 + a33 * m2;
+                flattice[nlattice - 1, 2] = D1Q6.distr0(m0, m1, m2);
+                flattice[nlattice - 1, 1] = D1Q6.distr1(m0, m1, m2);
+                flattice[nlattice - 1, 0] = D1Q6.distr2(m0, m1, m2);
 
                 lattice = new D1Q6(flattice, 1.0f);
                 flattice = lattice.Solve();
@@ -131,9 +108,9 @@ namespace Latticeb
                 //--TODO: set new BGK internal boundary data fleft, fright = g(fleft(right), flattice)
 
                 //--левая точка сращивания
-                m0 = w0 * 1.0f * flattice[0, 2] + w1 * flattice[0, 1] + w2 * 1.0f * flattice[0, 0];
-                m1 = -w0 * 0.5f * flattice[0, 2] - w1 * flattice[0, 1] - w2 * 3.0f * flattice[0, 0];
-                m2 = w0 * 0.25f * flattice[0, 2] + w1 * flattice[0, 1] + w2 * 9.0f * flattice[0, 0];
+                m0 = D1Q6.moment0(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
+                m1 = - D1Q6.moment1(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
+                m2 = D1Q6.moment2(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
                 for (int i = 0; i < nvlc / 2; ++i)
                 {
                     fleft[xsteps - 1, i] = vw * 1.0f / (float)Math.Sqrt(2.0 * Math.PI * 1.0f)
@@ -148,9 +125,10 @@ namespace Latticeb
                 }
 
                 //--правая точка сращивания
-                m0 = w0 * 1.0f * flattice[nlattice - 1, 3] + w1 * flattice[nlattice - 1, 4] + w2 * 1.0f * flattice[nlattice - 1, 5];
-                m1 = w0 * 0.5f * flattice[nlattice - 1, 3] + w1 * flattice[nlattice - 1, 4] + w2 * 3.0f * flattice[nlattice - 1, 5];
-                m2 = w0 * 0.25f * flattice[nlattice - 1, 3] + w1 * flattice[nlattice - 1, 4] + w2 * 9.0f * flattice[nlattice - 1, 5];
+                m0 = D1Q6.moment0(flattice[nlattice - 1, 3], flattice[nlattice - 1, 4], flattice[nlattice - 1, 5]);
+                m1 = D1Q6.moment1(flattice[nlattice - 1, 3], flattice[nlattice - 1, 4], flattice[nlattice - 1, 5]);
+                m2 = D1Q6.moment2(flattice[nlattice - 1, 3], flattice[nlattice - 1, 4], flattice[nlattice - 1, 5]);
+
                 for (int i = nvlc / 2; i < nvlc; ++i)
                 {
                     fright[0, i] = vw * 1.0f / (float)Math.Sqrt(2.0 * Math.PI * 1.0f)
