@@ -14,16 +14,16 @@ namespace Latticeb
         [STAThread]
         static void Main()
         {
-            const int tsteps = 200;  // time steps
-            const float physlength = 5.0f; // phys length
-            const int xsteps = 10; // space nodes quantity for BGK
-            const int nvlc = 128; // velocity nodes quantity for BGK
+            const int tsteps = 1;  // time steps
+            const float physlength = 10.0f; // phys length
+            const int xsteps = 40; // space nodes quantity for BGK
+            const int nvlc = 60; // velocity nodes quantity for BGK
 
             //--hybrid Left and Right BGK segments
             float[,] fleft = new float[xsteps, nvlc];
             float[,] fright = new float[xsteps, nvlc];
             const float Kn = 1.0f;
-            const float vw = 0.03f; // distance between velocities
+            const float vw = 0.024f; // distance between velocities
             float totmass = 0f; // total mass
 
             // initial boundary conditions
@@ -36,7 +36,7 @@ namespace Latticeb
             float rho2 = 1.0f / BGK_1d._n_eq_check_dens(T2, u2, vw, nvlc);
 
             //--BGK boundaries, time = 0;
-            for(int k = 0; k < nvlc ; ++k)
+            for (int k = 0; k < nvlc; ++k)
             {
                 //--hybrid
                 fleft[0, k] = BGK_1d._n_eq(T1, rho1, u1, vw, nvlc, k);
@@ -44,7 +44,7 @@ namespace Latticeb
             }
 
 
-            const int nlattice = 18; // space nodes quantity for lattice
+            const int nlattice = 161; // space nodes quantity for lattice
             float[,] flattice = new float[nlattice, 6];
 
             //--hybrid declaration
@@ -76,6 +76,16 @@ namespace Latticeb
             const float a32 = -9.90099f;
             const float a33 = 6.60066f;
 
+            for (int i = 1; i < nlattice - 1; ++i)
+            {
+                flattice[i, 0] = D1Q6._n_eq_k(1.0f, u1, 0);
+                flattice[i, 1] = D1Q6._n_eq_k(1.0f, u1, 1);
+                flattice[i, 2] = D1Q6._n_eq_k(1.0f, u1, 2);
+                flattice[i, 3] = D1Q6._n_eq_k(1.0f, u1, 3);
+                flattice[i, 4] = D1Q6._n_eq_k(1.0f, u1, 4);
+                flattice[i, 5] = D1Q6._n_eq_k(1.0f, u1, 5);
+            }
+
             for (int time = 0; time < tsteps; ++time)
             {
                 bgk_left = new BGK_1d(fleft, Kn, vw, physlength);
@@ -93,7 +103,7 @@ namespace Latticeb
                     m2 += fleft[xsteps - 1, i] * (vw * (i - (nvlc - 1.0f) / 2.0f))
                                       * (vw * (i - (nvlc - 1.0f) / 2.0f));
                 }
-                m0 *= 1.0f; m1 *= vw; m2 *= vw;
+                // m0 *= 1.0f; m1 *= vw; m2 *= vw;
 
                 //--TODO: set LBE condition (flattice[,] = F(flattice, fleft, fright) )
                 flattice[0, 3] = a11 * m0 + a12 * m1 + a13 * m2;
@@ -122,8 +132,8 @@ namespace Latticeb
 
                 //--левая точка сращивания
                 m0 = w0 * 1.0f * flattice[0, 2] + w1 * flattice[0, 1] + w2 * 1.0f * flattice[0, 0];
-                m1 = - w0 * 0.5f * flattice[0, 2] - w1 * flattice[0, 1] - w2 * 3.0f * flattice[0, 0];
-                m2 = w0 *0.25f * flattice[0, 2] + w1 * flattice[0, 1] + w2 * 9.0f * flattice[0, 0];
+                m1 = -w0 * 0.5f * flattice[0, 2] - w1 * flattice[0, 1] - w2 * 3.0f * flattice[0, 0];
+                m2 = w0 * 0.25f * flattice[0, 2] + w1 * flattice[0, 1] + w2 * 9.0f * flattice[0, 0];
                 for (int i = 0; i < nvlc / 2; ++i)
                 {
                     fleft[xsteps - 1, i] = vw * 1.0f / (float)Math.Sqrt(2.0 * Math.PI * 1.0f)
@@ -143,11 +153,11 @@ namespace Latticeb
                 m2 = w0 * 0.25f * flattice[nlattice - 1, 3] + w1 * flattice[nlattice - 1, 4] + w2 * 9.0f * flattice[nlattice - 1, 5];
                 for (int i = nvlc / 2; i < nvlc; ++i)
                 {
-                    fright[0, i] = vw * 1.0f / (float) Math.Sqrt(2.0 * Math.PI * 1.0f) 
-                        * (float) Math.Exp(-
+                    fright[0, i] = vw * 1.0f / (float)Math.Sqrt(2.0 * Math.PI * 1.0f)
+                        * (float)Math.Exp(-
                  ((i - (nvlc - 1.0) / 2.0) * vw) *
                  ((i - (nvlc - 1.0) / 2.0) * vw) / (2.0))
-                 * (float) (m0 + m1 * (i - (nvlc - 1.0) / 2.0) * vw + 
+                 * (float)(m0 + m1 * (i - (nvlc - 1.0) / 2.0) * vw +
                  (m1 - m0) *
                  (((i - (nvlc - 1.0) / 2.0) * vw) *
                  ((i - (nvlc - 1.0) / 2.0) * vw) - 1.0)
@@ -175,15 +185,15 @@ namespace Latticeb
             for (int i = 0; i < nlattice; i++)
             {
                 Console.WriteLine(flattice[i, 0] + " " + flattice[i, 1] + " " + flattice[i, 2] +
-                            " " + flattice[i, 3] + " " + flattice[i, 4] + " " + flattice[i, 5] + " x" + i*0.5);
+                            " " + flattice[i, 3] + " " + flattice[i, 4] + " " + flattice[i, 5] + " x" + i * 0.5);
             }
 
             Console.WriteLine("mass=" + totmass);
             Console.ReadLine();
 
-         //   Application.EnableVisualStyles();
-         //   Application.SetCompatibleTextRenderingDefault(false);
-         //   Application.Run(new Form1());
+            //   Application.EnableVisualStyles();
+            //   Application.SetCompatibleTextRenderingDefault(false);
+            //   Application.Run(new Form1());
         }
     }
 }
