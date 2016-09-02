@@ -13,7 +13,7 @@ namespace BGK.Models
     {
          //---distribution function;
          //--first dimension - time; second - x coordinate; third - velocity
-         public float[,,] F;
+         private float[,,] F;
          //--sound velocity squared
          // private float cs = 1f;
 
@@ -26,18 +26,23 @@ namespace BGK.Models
          private float dx; // space step;
          private float dt; // time step;
 
-         private float[,] Fnew; // time layer for one step solution
+         public float[,] Fnew; // time layer for one step solution (result)
+
+         public float dtime()
+         {
+             return dt;
+         }
 
          //--constructor: define initial conditions
-         public BGK_1d(float[,] Finit, float Kn, float vlcweight) {
+         public BGK_1d(float[,] Finit, float Kn, float vlcweight, float physlength) {
 
              invtau = 1.0f / Kn; // Knudsen number
              vw = vlcweight; // dist. between velocities
              nspace = Finit.GetLength(0);
              nvel = Finit.GetLength(1);
 
-             dx = 1.0f / (nspace - 1.0f); // space step
-             dt =  dx / (vw * (nvel - 1.0f) * 0.5f) ; // time step (CFL condition)
+             dx = physlength / (nspace - 1.0f); // space step
+             dt =  1.0f * dx / (vw * (nvel - 1.0f) * 0.5f) ; // time step (CFL condition)
 
 
              Fnew = new float[nspace, nvel];  // time layer for one step solution
@@ -121,71 +126,134 @@ namespace BGK.Models
              return (float)_tmp;
          }
 
-         //-- time evolution for 1 step
-         public float[,] Solve_one_step() 
+         public void copy_initial()
          {
+             // copy initial values to Fnew
+             for (int k = 0; k < nvel; ++k)
+             {
+                 Fnew[0, k] = F[1, 0, k] = F[0, 0, k];
+                 Fnew[nspace - 1, k] = F[1, nspace - 1, k] = F[0, nspace - 1, k];
+             }
 
-                 const int t = 1; // only one step considered
-
-                 // copy initial values to Fnew
-                 for (int k = 0; k < nvel; ++k) {
-                     Fnew[0, k] = F[1, 0, k] = F[0, 0, k];
-                     Fnew[nspace - 1, k] = F[1, nspace - 1, k] = F[0, nspace - 1, k];
+             for (int j = 1; j + 1 < nspace; ++j)
+             {//--all cells (0, 1) 
+                 // copy all values to new time layer 
+                 for (int k = 0; k < nvel; ++k)
+                 {
+                     F[1, j, k] = F[0, j, k];
                  }
+             }
+         }
 
-                 // 1. Evaluation with no collision integral
-                 for (int j = 1; j + 1 < nspace; ++j) {//--all cells (0, 1) 
-                     // copy all values to new time layer 
-                     for (int k = 0; k < nvel; ++k) {
-                         F[1, j, k] = F[0, j, k];
-                     }
-                     
-                     // positive velocities
-                     for (int k = nvel / 2; k < nvel; ++k)
-                         F[t, j, k] += (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx 
-                                     * (F[t - 1, j - 1, k] - F[t - 1, j, k]);
-                     // negative velocities
-                     for (int k = 0; k < nvel / 2; ++k)
-                         F[t, j, k] -= (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx 
-                                     * (F[t - 1, j + 1, k] - F[t - 1, j, k]);
+         public void advection()
+         {
+             const int t = 1; // only one step considered
 
-                 }
-                 /* part of evaluation */
-                 // positive velocities for x = 1
-                 for (int j = nspace - 1, k = nvel / 2; k < nvel; ++k)
+             // 1. Evaluation with no collision integral
+             for (int j = 1; j + 1 < nspace; ++j)
+             {//--all cells (0, 1)                    
+                 // positive velocities
+                 for (int k = nvel / 2; k < nvel; ++k)
                      F[t, j, k] += (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx
                                  * (F[t - 1, j - 1, k] - F[t - 1, j, k]);
-                 // negative velocities for x = 0
-                 for (int j = 0,          k = 0; k < nvel / 2; ++k)
+                 // negative velocities
+                 for (int k = 0; k < nvel / 2; ++k)
                      F[t, j, k] -= (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx
                                  * (F[t - 1, j + 1, k] - F[t - 1, j, k]);
 
+             }
+             /* part of evaluation */
+             // positive velocities for x = 1
+             for (int j = nspace - 1, k = nvel / 2; k < nvel; ++k)
+                 F[t, j, k] += (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx
+                             * (F[t - 1, j - 1, k] - F[t - 1, j, k]);
+             // negative velocities for x = 0
+             for (int j = 0, k = 0; k < nvel / 2; ++k)
+                 F[t, j, k] -= (vw * (k - (nvel - 1.0f) / 2.0f)) * dt / dx
+                             * (F[t - 1, j + 1, k] - F[t - 1, j, k]);
+         }
 
-                 // implicit (1, j), t or explicit (0, j), t-1 collision integral evaluation
-                 for (int j = 0; j < nspace; ++j) // x in [0, 1]
+         public void implicit_collision() {
+             const int t = 1;
+
+             for (int j = 0; j < nspace; ++j) // x in [0, 1]
+             {
+                 float rho = _dens(1, j);
+                 float u = _vlc(1, j, rho);
+                 float T = _temp(1, j, rho, u);
+                 float check_dens = _n_eq_check_dens(T, u, vw, nvel);
+
+                 if (check_dens > 0.0f)
                  {
-                     float rho = _dens(1, j);
-                     float u = _vlc(1, j, rho);
-                     float T = _temp(1, j, rho, u);
-                     float check_dens = _n_eq_check_dens(T, u, vw, nvel);
-
-                     if (check_dens > 0.0f)
-                     {
-                         if (j > 0)
-                             for (int k = nvel / 2; k < nvel; ++k)
-                                 F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t, j, k]) * dt;
-                         if (j + 1 < nspace)
-                             for (int k = 0; k < nvel / 2; ++k)
-                                 F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t, j, k]) * dt;
-                     }
-
-                     for (int k = 0; k < nvel; ++k)
-                         Fnew[j, k] = F[t, j, k];
+                     if (j > 0)
+                         for (int k = nvel / 2; k < nvel; ++k)
+                             F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t, j, k]) * dt;
+                     if (j + 1 < nspace)
+                         for (int k = 0; k < nvel / 2; ++k)
+                             F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t, j, k]) * dt;
                  }
 
-                 return Fnew;
-         }//--end of the method
+                 for (int k = 0; k < nvel; ++k)
+                     Fnew[j, k] = F[t, j, k];
+             }
+         }
 
+         public void explicit_collision() {
+             const int t = 1;
+             for (int j = 0; j < nspace; ++j) // x in [0, 1]
+             {
+                 float rho = _dens(0, j);
+                 float u = _vlc(0, j, rho);
+                 float T = _temp(0, j, rho, u);
+                 float check_dens = _n_eq_check_dens(T, u, vw, nvel);
+
+                 if (check_dens > 0.0f)
+                 {
+                     if (j > 0)
+                         for (int k = nvel / 2; k < nvel; ++k)
+                             F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t - 1, j, k]) * dt;
+                     if (j + 1 < nspace)
+                         for (int k = 0; k < nvel / 2; ++k)
+                             F[t, j, k] += invtau * (_n_eq(T, rho / check_dens, u, vw, nvel, k) - F[t - 1, j, k]) * dt;
+                 }
+
+                 for (int k = 0; k < nvel; ++k)
+                     Fnew[j, k] = F[t, j, k];
+             }
+         }
+
+         public void recharge()
+         {
+             //---set the initial distribution again
+             for (int j = 0; j < nspace; j++)
+             {
+                 for (int k = 0; k < nvel; k++)
+                 {
+                     F[0, j, k] = F[1, j, k];
+                 }
+             }
+         }
+
+         //-- time evolution for 1 step
+         public float[,] Solve_one_step() 
+         {
+             copy_initial();
+             advection();
+             implicit_collision(); // or explicit_collision()
+             return Fnew;
+         } //--end of the method
+
+         public float[,] Solve(float time)
+         {
+             for (int i = 0; i * dt < time; ++i)
+             {
+                 copy_initial();
+                 advection();
+                 implicit_collision();
+                 recharge();
+             }
+             return Fnew;
+         }
 
          //--evaluate density (x)
          public float[] P()
