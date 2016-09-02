@@ -42,6 +42,53 @@ namespace Latticeb.Models
              }
          
          }
+         
+         // Model parameter constants
+         const float w0 = 0.3234f;
+         const float w1 = 0.1463f;
+         const float w2 = 0.0303f;
+
+         /* inverse matrix constants
+         {{0.3234 * 1,0.1463 * 1,0.0303 * 1},
+          {0.3234 * 0.5,0.1463 * 1,0.0303 * 3},
+          {0.3234 * 0.25,0.1463 * 1,0.0303 * 9}}^-1 = 
+          {{7.42115, -9.89487, 2.47372},
+          {-10.2529, 23.9234, -6.83527},
+          {3.30033, -9.90099, 6.60066}}
+           wolframalpha.com */
+
+         const float a11 = 7.42115f; const float a12 = -9.89487f; const float a13 = 2.47372f;
+         const float a21 = -10.2529f;const float a22 = 23.9234f;  const float a23 = -6.83527f;
+         const float a31 = 3.30033f; const float a32 = -9.90099f; const float a33 = 6.60066f;
+
+         // distribution and moment evaluation functions
+         static public float distr0(float m0, float m1, float m2)
+         {
+             return a11 * m0 + a12 * m1 + a13 * m2;
+         }
+
+         static public float distr1(float m0, float m1, float m2)
+         {
+             return a21 * m0 + a22 * m1 + a23 * m2;
+         }
+
+         static public float distr2(float m0, float m1, float m2)
+         {
+             return a31 * m0 + a32 * m1 + a33 * m2;
+         }
+
+
+         static public float moment0(float v0, float v1, float v2) {
+             return w0 * 1.0f * v0 + w1 * v1 + w2 * 1.0f * v2;
+         }
+
+         static public float moment1(float v0, float v1, float v2) {
+             return w0 * 0.5f * v0 + w1 * v1 + w2 * 3.0f * v2;
+         }
+
+         static public float moment2(float v0, float v1, float v2) {
+             return w0 * 0.25f * v0 + w1 * v1 + w2 * 9.0f * v2;
+         }
 
          private float _dens(int t, int j)
          {
