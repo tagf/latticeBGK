@@ -123,7 +123,7 @@ namespace Latticeb.Models
                  for (int j = 0; j < 6; ++j) //--cells on the left side
                  {
                      //--velocities 0 - 5 for j in [3, n - 2)
-                     rho = -_dens(t, j);
+                     rho = _dens(t, j);
                      u = _vlc(t, j, rho);
                      F[t + 1, j + 6, 5] = invtau * (_n_eq_5(rho, u) - F[t, j, 5]) + F[t, j, 5];
                      F[t + 1, j + 2, 4] = invtau * (_n_eq_4(rho, u) - F[t, j, 4]) + F[t, j, 4];
@@ -136,7 +136,7 @@ namespace Latticeb.Models
                  for (int j = 6; j < N - 6; ++j) //--all internal cells
                  {
                      //--velocities 0 - 5 for j in [3, n - 2)
-                     rho = -_dens(t, j);
+                     rho = _dens(t, j);
                      u = _vlc(t, j, rho);
                      F[t + 1, j - 6, 0] = invtau * (_n_eq_0(rho, u) - F[t, j, 0]) + F[t, j, 0];
                      F[t + 1, j - 2, 1] = invtau * (_n_eq_1(rho, u) - F[t, j, 1]) + F[t, j, 1];
@@ -149,7 +149,7 @@ namespace Latticeb.Models
                  for (int j = N - 6; j < N; ++j) //--cells on the right side
                  {
                      //--velocities 0 - 5 for j in [3, n - 2)
-                     rho = -_dens(t, j);
+                     rho = _dens(t, j);
                      u = _vlc(t, j, rho);
                      F[t + 1, j - 6, 0] = invtau * (_n_eq_0(rho, u) - F[t, j, 0]) + F[t, j, 0];
                      F[t + 1, j - 2, 1] = invtau * (_n_eq_1(rho, u) - F[t, j, 1]) + F[t, j, 1];
