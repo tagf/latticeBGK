@@ -64,6 +64,21 @@ namespace Latticeb.Models
              }
          }
 
+         private float _tmpr(int t, int j, float rho)
+         {
+            if (rho == 0) //--!warning comparison with float zero
+            {
+                return 0f;
+            }
+            else
+            {
+                return (F[t, j, 4] + F[t, j, 1]
+                + 0.25f * (F[t, j, 3] + F[t, j, 2])
+                + 9.0f * (F[t, j, 5] + F[t, j, 0])) / rho - _vlc(t, j, rho) * _vlc(t, j, rho);
+             }
+         }
+
+
          static public float _n_eq_k(float rho, float u, int k)
          {
              float c_i, w_i;
@@ -203,6 +218,20 @@ namespace Latticeb.Models
          }//--end of the method
 
 
+         //--evaluate  temperature (t,x)
+        public float[,] T()
+        {
+            float[,] temper = new float[F.GetLength(0), F.GetLength(1)];
+
+            for (int t = 0; t < F.GetLength(0); t++)
+            {
+                for (int j = 0; j < F.GetLength(1); j++)
+                {
+                    temper[t, j] = _tmpr(t, j, _dens(t, j));
+                }
+            }
+            return temper;
+        }//--end of the method
      }
 
 }
