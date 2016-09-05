@@ -49,9 +49,9 @@ namespace Latticeb.Models
         const float w1 = 0.1298f;
         const float w2 = 0.0143f;
 
-        const float c0 = 0.4249;
-        const float c1 = 1.6313;
-        const float c2 = 2.5106;
+        const float c0 = 0.4249f;
+        const float c1 = 1.6313f;
+        const float c2 = 2.5106f;
 
      /* 
          M=...
@@ -70,8 +70,8 @@ namespace Latticeb.Models
       */
 
         const float a11 = 4.5734f;  const float a12 = -4.6252f;  const float a13 = 1.1167f;
-        const float a21 =-7.7475f ; const float a22 =21.3196 ;   const float a23 =-7.2627 ;
-        const float a31 = 26.4299;  const float a32 = -78.4044;  const float a33 = 38.1307;
+        const float a21 =-7.7475f ; const float a22 =21.3196f ;   const float a23 =-7.2627f ;
+        const float a31 = 26.4299f;  const float a32 = -78.4044f;  const float a33 = 38.1307f;
 
         // distribution and moment evaluation functions
         static public float distr0(float m0, float m1, float m2)
