@@ -2,60 +2,68 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Latticeb.Models;
 
-
-namespace Latticeb
+namespace latticeb
 {
     static class Program
     {
-
-        
-
         [STAThread]
         static void Main()
         {
-            int tsteps = 100, xsteps=10;
+            const int tsteps = 2000;  // time steps
+            const float physlength = 10.0f; // phys length
+            const int xsteps = 20; // space nodes quantity for BGK
+            const int nvlc = 60; // velocity nodes quantity for BGK
 
-            float[,] finit=new float[xsteps,3];
-            float[,] P = new  float[tsteps, xsteps];
+            //--BGK segment
+            float[,] f = new float[xsteps, nvlc];
+            const float Kn = 1.0f;
+            const float vw = 0.2f; // distance between velocities
+            float totmass = 0f; // total mass
 
-            //--initial data - step-like;
-            for(int i=0;i<finit.GetLength(0);i++)
+            // initial boundary conditions
+            float u1 = 0.0f;
+            float T1 = 1.0f;
+            float rho1 = 1.0f;
+
+            float u2 = 0.0f;
+            float T2 = 1.0f;
+            float rho2 = 1.0f;
+
+            //--BGK boundaries, time = 0;
+            for (int k = 0; k < nvlc; ++k)
             {
-               if(i<5){
-                  finit[i,0]=1/6f;
-                  finit[i,1]=1*4/6f;
-                  finit[i,2]=1*1/6f;
-               }
-               else{
-                  finit[i,0]=2*1/6f;
-                  finit[i,1]=2*4/6f;
-                  finit[i,2]=2*1/6f;
-               
-               }
-   
+                //--hybrid
+                if (k <= (nvlc - 1) / 2)
+                {
+                    f[xsteps - 1, k] = BGK_1d._n_eq(T2, rho2, u2, vw, nvlc, k);
+                    f[0, k] = 0;
+                }
+                else { 
+                    f[xsteps - 1, k] = 0;
+                    f[0, k] = BGK_1d._n_eq(T1, rho1, u1, vw, nvlc, k);
+                }
             }
 
-            //-- solving
-            D1Q3 flow = new D1Q3(finit, 1.0f, tsteps);
-            flow.Solve();
-            P = flow.P();
+
+            BGK_1d bgk = new BGK_1d(f, Kn, vw, physlength, tsteps);
+            bgk.Solve(tsteps);
 
             //--results
-            float totmass = 0f;
+            float[,] P = bgk.P();
+           // float[,] Ps = bgk.Ps();
+            float[,] U = bgk.U();
+            float[,] T = bgk.Temperatures();
+
+            totmass = 0; //--diagnostics of the left BGK area
             for (int i = 0; i < xsteps; i++)
             {
-                Console.WriteLine("density=" + P[tsteps-1, i]);
-                totmass = totmass + P[tsteps - 1, i];
+                Console.WriteLine(i / (xsteps - 1.0f) + " " + P[tsteps - 1, i] + " " + U[tsteps - 1, i] + " " + T[tsteps - 1, i] + " " + P[tsteps - 1, i] * U[tsteps-1,i]);
+                totmass = totmass + P[tsteps-1,i];
             }
-
-            Console.WriteLine("mass=" + totmass);
+           
+            
             Console.ReadLine();
-
-         //   Application.EnableVisualStyles();
-         //   Application.SetCompatibleTextRenderingDefault(false);
-         //   Application.Run(new Form1());
         }
     }
 }
