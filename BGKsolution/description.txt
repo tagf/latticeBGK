@@ -1,0 +1,13 @@
+решение BGK уравнения во всей области с параметрами
+// initial boundary conditions
+            float u1 = 0.5f;
+            float T1 = 0.7f;
+            float rho1 = 1.0f;
+
+            float u2 = -0.3f;
+            float T2 = 0.7f;
+            float rho2 = 1.0f;
+и вывод полумоментов в точках 0.2 и 0.8
+            
+            
+30 сентября 2016
