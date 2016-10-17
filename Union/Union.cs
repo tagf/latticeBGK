@@ -228,15 +228,32 @@ namespace latticeb
                 // 4. back from lattice to updating BGK subdomain border data
                 // to the left
                 lm0 = D1Q6.moment0(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
-                lm1 = D1Q6.moment1(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
+                lm1 = - /* minus required */ D1Q6.moment1(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
                 lm2 = D1Q6.moment2(flattice[0, 2], flattice[0, 1], flattice[0, 0]);
                 // to the right
                 rm0 = D1Q6.moment0(flattice[Nlattice - 1, 3], flattice[Nlattice - 1, 4], flattice[Nlattice - 1, 5]);
                 rm1 = D1Q6.moment1(flattice[Nlattice - 1, 3], flattice[Nlattice - 1, 4], flattice[Nlattice - 1, 5]);
                 rm2 = D1Q6.moment2(flattice[Nlattice - 1, 3], flattice[Nlattice - 1, 4], flattice[Nlattice - 1, 5]);
 
-                // TODO: set BGK half-distributions using m0-m2 for left and right subdomains respectively
+                // Setting BGK half-distributions using m0-m2 for left and right subdomains respectively
+                // TODO: check the code below, should lm2, rm2 not be used ?
+                //--левая точка сращивания
+                for (int i = 0; i < nvlc / 2; ++i)
+                {
+                    double phys_veloc = ((i - (nvlc - 1.0) / 2.0) * vw);
+                    fleft[Xsteps - 1, i] = vw * 1.0f / (float) Math.Sqrt(2.0 * Math.PI * 1.0f)
+                        * (float) Math.Exp( - phys_veloc * phys_veloc / (2.0))
+                        * (float) (lm0 + lm1 * phys_veloc + (lm1 - lm0) * (phys_veloc * phys_veloc - 1.0));
+                }
 
+                //--правая точка сращивания
+                for (int i = nvlc / 2; i < nvlc; ++i)
+                {
+                    double phys_veloc = ((i - (nvlc - 1.0) / 2.0) * vw);
+                    fleft[Xsteps - 1, i] = vw * 1.0f / (float) Math.Sqrt(2.0 * Math.PI * 1.0f)
+                        * (float) Math.Exp( - phys_veloc * phys_veloc / (2.0))
+                        * (float) (rm0 + rm1 * phys_veloc + (rm1 - rm0) * (phys_veloc * phys_veloc - 1.0));
+                }
             }
 
             // RESULTS
