@@ -250,7 +250,7 @@ namespace latticeb
                 for (int i = nvlc / 2; i < nvlc; ++i)
                 {
                     double phys_veloc = ((i - (nvlc - 1.0) / 2.0) * vw);
-                    fleft[Xsteps - 1, i] = vw * 1.0f / (float) Math.Sqrt(2.0 * Math.PI * 1.0f)
+                    fright[0, i] = vw * 1.0f / (float) Math.Sqrt(2.0 * Math.PI * 1.0f)
                         * (float) Math.Exp( - phys_veloc * phys_veloc / (2.0))
                         * (float) (rm0 + rm1 * phys_veloc + (rm1 - rm0) * (phys_veloc * phys_veloc - 1.0));
                 }
