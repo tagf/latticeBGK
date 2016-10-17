@@ -14,7 +14,7 @@ namespace latticeb
         static void Main()
         {
             // General
-            const int tsteps = 10000;  // time steps for initail run of BGK / lattice
+            const int tsteps = 10000;  // time steps for initial run of BGK / lattice
             const float physlength = 1.0f; // phys length
             const float Kn = 1.0f; // Knudsen number
 
@@ -165,7 +165,7 @@ namespace latticeb
                     }
                 }
 
-                // 2. computation of halfmoments from BGKs 
+                // 2. computation of half-moments from BGKs 
 
                 lm0 = lm1 = lm2 = 0;
                 int xstep;
@@ -235,10 +235,12 @@ namespace latticeb
                 rm1 = D1Q6.moment1(flattice[Nlattice - 1, 3], flattice[Nlattice - 1, 4], flattice[Nlattice - 1, 5]);
                 rm2 = D1Q6.moment2(flattice[Nlattice - 1, 3], flattice[Nlattice - 1, 4], flattice[Nlattice - 1, 5]);
 
+                // TODO: set BGK half-distributions using m0-m2 for left and right subdomains respectively
 
             }
 
-            //--results 
+            // RESULTS
+            //--check whether obtaining of results is correct 
             BGK_1d bgk_left = new BGK_1d(fleft, Kn, vw, physlength, 1);
             BGK_1d bgk_right = new BGK_1d(fright, Kn, vw, physlength, 1);
             float[,] P = bgk_left.P();
